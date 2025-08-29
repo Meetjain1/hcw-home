@@ -6,16 +6,11 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  IsEnum,
-  ValidateNested,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-import { ConsultationStatus, UserRole } from '@prisma/client'; 
-import { ReminderConfigDto } from 'src/reminder/dto/reminder-config.dto';
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ConsultationStatus, UserRole } from '@prisma/client';
+import { ReminderConfigDto } from 'src/reminder/dto/reminder-config.dto';
 
 export class CreateParticipantDto {
   @ApiProperty({ description: "Participant's email" })

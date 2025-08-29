@@ -40,7 +40,6 @@ import {
   ConsultationPatientHistoryItemDto,
 } from './dto/consultation-patient-history.dto';
 import { RateConsultationDto } from './dto/rate-consultation.dto';
-import { RateConsultationDto } from './dto/rate-consultation.dto';
 import { ConfigService } from 'src/config/config.service';
 import { AvailabilityService } from 'src/availability/availability.service';
 import { MediasoupSessionService } from 'src/mediasoup/mediasoup-session.service';
@@ -293,6 +292,9 @@ export class ConsultationService {
       } catch (error) {
         this.logger.error(`Failed to schedule reminders for consultation ${consultation.id}:`, error);
         // Continue despite reminder scheduling failure
+      }
+    }
+    
     if (createDto.participants && createDto.participants.length > 0) {
       for (const participantDto of createDto.participants) {
         if (!participantDto.email) {

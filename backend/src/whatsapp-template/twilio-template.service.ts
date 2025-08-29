@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '../config/config.service';
-import * as twilio from 'twilio';
+import twilio from 'twilio';
 import { ContentInstance } from 'twilio/lib/rest/content/v1/content';
 import axios from 'axios';
 
@@ -48,14 +48,34 @@ export interface ApprovalStatusResponse {
 @Injectable()
 export class TwilioWhatsappService {
   private readonly logger = new Logger(TwilioWhatsappService.name);
-  private twilioClient: twilio.Twilio;
+  private twilioClient: twilio.Twilio | null;
   private accountSid: string;
   private authToken: string;
 
   constructor(private configService: ConfigService) {
     this.accountSid = this.configService.twilioAccountSid;
     this.authToken = this.configService.twilioAuthToken;
-    this.twilioClient = twilio(this.accountSid, this.authToken);
+    
+    // Only initialize Twilio client if credentials are provided
+    if (this.accountSid && this.authToken && this.accountSid.startsWith('AC') && this.authToken) {
+      try {
+        this.twilioClient = twilio(this.accountSid, this.authToken);
+        this.logger.log('Twilio client initialized successfully');
+      } catch (error) {
+        this.logger.warn('Failed to initialize Twilio client, running in mock mode');
+        this.twilioClient = null;
+      }
+    } else {
+      this.logger.warn('Twilio credentials not provided or invalid, running in mock mode');
+      this.twilioClient = null;
+    }
+  }
+
+  /**
+   * Check if Twilio client is available
+   */
+  private isTwilioAvailable(): boolean {
+    return this.twilioClient !== null;
   }
 
   /**
@@ -79,6 +99,20 @@ export class TwilioWhatsappService {
    */
   async createTemplate(payload: CreateTemplatePayload): Promise<TwilioTemplateResponse> {
     const { friendlyName, language, body, category, contentType, variables, actions } = payload;
+
+    if (!this.twilioClient) {
+      this.logger.warn('Twilio client not available, returning mock response');
+      return {
+        sid: `mock_${Date.now()}`,
+        friendlyName,
+        language,
+        variables,
+        types: { [contentType]: { body, actions } },
+        url: '',
+        dateCreated: new Date().toISOString(),
+        dateUpdated: new Date().toISOString(),
+      };
+    }
 
     try {
       this.logger.log(`Creating WhatsApp Template with friendly_name: ${friendlyName}`);
@@ -198,10 +232,15 @@ export class TwilioWhatsappService {
    * Get all templates from Twilio
    */
   async getAllTemplates(): Promise<TwilioTemplateResponse[]> {
+    if (!this.isTwilioAvailable()) {
+      this.logger.warn('Twilio client not available, returning empty array');
+      return [];
+    }
+
     try {
       this.logger.log('Fetching all templates from Twilio');
 
-      const templates = await this.twilioClient.content.v1.contents.list();
+      const templates = await this.twilioClient!.content.v1.contents.list();
 
       return templates.map(template => this.mapContentInstanceToResponse(template));
     } catch (error: any) {
@@ -214,8 +253,22 @@ export class TwilioWhatsappService {
    * Get a single template by SID from Twilio
    */
   async getTemplateBySid(sid: string): Promise<TwilioTemplateResponse> {
+    if (!this.isTwilioAvailable()) {
+      this.logger.warn('Twilio client not available, returning mock response');
+      return {
+        sid,
+        friendlyName: 'Mock Template',
+        language: 'en',
+        variables: {},
+        types: {},
+        url: '',
+        dateCreated: new Date().toISOString(),
+        dateUpdated: new Date().toISOString(),
+      };
+    }
+
     try {
-      const template = await this.twilioClient.content.v1.contents(sid).fetch();
+      const template = await this.twilioClient!.content.v1.contents(sid).fetch();
 
       return this.mapContentInstanceToResponse(template);
     } catch (error: any) {

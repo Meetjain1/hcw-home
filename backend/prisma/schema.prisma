@@ -443,6 +443,7 @@ id             Int      @id @default(autoincrement())
   updatedAt      DateTime @updatedAt
 
   @@map("whatsapp_templates")
+}
 
 model MessageReadReceipt {
   id        Int      @id @default(autoincrement())
@@ -460,26 +461,7 @@ model MessageReadReceipt {
 }
 
 
-model WhatsappTemplate {
-  id              String @id
-  key             String
-  friendlyName    String
-  body            String
-  language        String
-  category        String
-  contentType     String
-  variables       Json
-  actions         Json
-  approvalStatus  String
-  createdAt       BigInt
-  updatedAt       BigInt
-  sid             String
-  types           Json
-  url             String
-  rejectionReason String
 
-  @@map("whatsapp_template")
-}
 
 model SmsProvider {
   id         Int      @id @default(autoincrement())

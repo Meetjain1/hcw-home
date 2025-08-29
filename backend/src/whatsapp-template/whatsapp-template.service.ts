@@ -64,9 +64,9 @@ export class WhatsappTemplateService {
       category: createWhatsappTemplateDto.category || null,
       contentType: createWhatsappTemplateDto.contentType || null,
       variables: createWhatsappTemplateDto.variables || {},
-      types: createWhatsappTemplateDto.types || Prisma.JsonNull,
+      types: createWhatsappTemplateDto.types || {},
       url: createWhatsappTemplateDto.url || null,
-      actions: createWhatsappTemplateDto.actions || Prisma.JsonNull,
+      actions: createWhatsappTemplateDto.actions || {},
       approvalStatus: createWhatsappTemplateDto.approvalStatus || 'DRAFT',
       rejectionReason: createWhatsappTemplateDto.rejectionReason || null,
     };
@@ -318,7 +318,7 @@ export class WhatsappTemplateService {
         const twilioResponse = await this.twilioWhatsappService.createTemplate({
           friendlyName: template.key,
           language: template.language || 'en',
-          body: template.body || '',
+          body: '',
           category: template.category,
           contentType: template.contentType || 'twilio/text',
           variables: template.variables,
@@ -412,7 +412,7 @@ export class WhatsappTemplateService {
             await this.twilioWhatsappService.createTemplate({
               friendlyName: template.key,
               language: template.language || 'en',
-              body: template.body || '',
+              body: '',
               category: template.category,
               contentType: template.contentType || 'twilio/text',
               variables: template.variables,
